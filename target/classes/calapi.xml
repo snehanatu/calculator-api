@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+    <http:listener-config name="HTTP_Listener_Configuration" host="localhost" port="8081" doc:name="HTTP Listener Configuration"/>
+    <flow name="calapiFlow">
+        <http:listener config-ref="HTTP_Listener_Configuration" path="/{num1}/{num2}/{opt}" doc:name="HTTP"/>
+        <choice doc:name="Choice">
+            <when expression="#[message.inboundProperties.'http.uri.params'.opt == 'add']">
+                <logger level="INFO" doc:name="Addition"/>
+                <flow-ref name="Addition" doc:name="Flow Reference"/>
+            </when>
+            <when expression="
+#[message.inboundProperties.http.uri.params.opt == 'sub']">
+                <logger level="INFO" doc:name="Substraction"/>
+                <flow-ref name="Siubstraction" doc:name="Flow Reference"/>
+            </when>
+            <when expression="#[message.inboundProperties.http.uri.params.opt == 'multi']">
+                <logger level="INFO" doc:name="Multiplication"/>
+                <flow-ref name="Multiplication" doc:name="Flow Reference"/>
+            </when>
+            <when expression="#[message.inboundProperties.http.uri.params.opt == 'div']">
+                <logger level="INFO" doc:name="Division"/>
+                <flow-ref name="Division" doc:name="Flow Reference"/>
+            </when>
+            <otherwise>
+                <logger level="INFO" doc:name="Default"/>
+            </otherwise>
+        </choice>
+    </flow>
+    <flow name="Addition">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	add: inboundProperties.'http.uri.params'.num1 + inboundProperties.'http.uri.params'.num2
+}]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="Siubstraction">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	sub : inboundProperties.'http.uri.params'.num1 - inboundProperties.'http.uri.params'.num2
+}
+
+]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="Multiplication">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	multi : inboundProperties.'http.uri.params'.num1 * inboundProperties.'http.uri.params'.num2
+
+}]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+    <flow name="Division">
+        <dw:transform-message doc:name="Transform Message">
+            <dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+{
+	div : inboundProperties.'http.uri.params'.num1 / inboundProperties.'http.uri.params'.num2
+}
+]]></dw:set-payload>
+        </dw:transform-message>
+    </flow>
+</mule>
